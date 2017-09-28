@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>		// Para usar strings
+#include <math.h>
 
 #ifdef WIN32
 #include <windows.h>    // Apenas para Windows
@@ -33,6 +34,8 @@ typedef struct {
 // Protótipos
 void load(char* name, Img* pic);
 void valida();
+void processarImagens();
+double maisProxima();
 
 // Funções da interface gráfica e OpenGL
 void init();
@@ -128,10 +131,14 @@ int main(int argc, char** argv)
 #ifdef DEMO
 	load(argv[3], &pic[2]);
 #else
-   // memset(pic[2].img,0,pic[2].width*pic[2].height*3);
+    //memset(pic[2].img,0,pic[2].width*pic[2].height*3);
 
     // Para valer, só aloca memória para a imagem de saída
 	pic[2].img = malloc(pic[1].width * pic[1].height * 3); // W x H x 3 bytes (RGB)
+
+	processarImagens();
+
+
 #endif // DEMO
 
     // Cria textura para a imagem de saída
@@ -265,4 +272,40 @@ void draw()
 
     // Exibe a imagem
     glutSwapBuffers();
+}
+
+void processarImagens(){
+    int tamanho = width * height;
+
+    RGB* img1 = malloc(tamanho * 3);
+    RGB* img2 = malloc(tamanho * 3);
+    RGB* img3 = malloc(tamanho * 3);
+
+    memcpy(img1, pic[0].img, tamanho * 3);
+    memcpy(img2, pic[1].img, tamanho * 3);
+
+    double lastCalculatedDistance = 0.00;
+
+    for(int i = 0; i < tamanho; i++){
+
+        for(int j = 0; j < tamanho; j++){
+            double calculatedDistance = calcDistance(img1[i],img2[j]);
+
+            if(calculatedDistance < lastCalculatedDistance){
+                lastCalculatedDistance  = calculatedDistance;
+
+                img3[j].r = img1[j].r;
+                img3[j].g = img1[j].g;
+                img3[j].b = img1[j].b;
+            }
+        }
+    }
+
+    pic[2].img = img3;
+
+
+}
+
+double calcDistance(RGB* pixel1, RGB* pixel2){
+   return sqrt(pow(pixel1.r - pixel2.r, 2) + pow(pixel1.g - pixel2.g, 2) + pow(pixel1.b - pixel2.b, 2));
 }
