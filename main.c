@@ -35,7 +35,7 @@ typedef struct {
 void load(char* name, Img* pic);
 void valida();
 void processarImagens();
-double maisProxima();
+double calcDistance(RGB* pixel1, RGB* pixel2);
 
 // Funções da interface gráfica e OpenGL
 void init();
@@ -137,7 +137,7 @@ int main(int argc, char** argv)
 	pic[2].img = malloc(pic[1].width * pic[1].height * 3); // W x H x 3 bytes (RGB)
 
 	processarImagens();
-
+    valida();
 
 #endif // DEMO
 
@@ -245,7 +245,7 @@ void draw()
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);  // Preto
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
-    // Para outras cores, veja exemplos em /etc/X11/rgb.txt
+    // Para outras cores, veja exem plos em /etc/X11/rgb.txt
 
     glColor3ub(255, 255, 255);  // branco
 
@@ -284,28 +284,57 @@ void processarImagens(){
     memcpy(img1, pic[0].img, tamanho * 3);
     memcpy(img2, pic[1].img, tamanho * 3);
 
-    double lastCalculatedDistance = 0.00;
+    double maxDistance = 0.00;
 
-    for(int i = 0; i < tamanho; i++){
+    int partialTam = tamanho / 2;
 
-        for(int j = 0; j < tamanho; j++){
-            double calculatedDistance = calcDistance(img1[i],img2[j]);
+    for(int i = 0; i < wid; i++){
+       for(int k = 0; k < partialTam; k++){
+            int finalIndex = partialTam + k;
+            finalIndex = finalIndex >= tamanho ? finalIndex - 1 : finalIndex;
 
-            if(calculatedDistance < lastCalculatedDistance){
-                lastCalculatedDistance  = calculatedDistance;
+            if(img1[k].r != '\0' && img1[k].g != '\0' && img1[k].b != '\0'){
+                if(maxDistance == 0.00){
+                        maxDistance = calcDistance(&img2[i],&img1[k]);
+                        img3[i] = img1[k];
+                        img1[k].r = '\0';
+                        img1[k].g = '\0';
+                        img1[k].b = '\0';
+                }else {
+                        double currentCalc = calcDistance(&img2[i],&img1[k]);
+                        double lastCalc = calcDistance(&img2[i],&img1[finalIndex]);
 
-                img3[j].r = img1[j].r;
-                img3[j].g = img1[j].g;
-                img3[j].b = img1[j].b;
-            }
-        }
-    }
+                        if(currentCalc <= lastCalc && currentCalc <= maxDistance){
+                            maxDistance = currentCalc;
+
+                            img3[i] = img1[k];
+                            img1[k].r = '\0';
+                            img1[k].g = '\0';
+                            img1[k].b = '\0';
+                        }
+
+                        if(lastCalc <= currentCalc && lastCalc <= maxDistance){
+                            maxDistance = lastCalc;
+
+                            img3[i] = img1[finalIndex];
+                            img1[finalIndex].r = '\0';
+                            img1[finalIndex].g = '\0';
+                            img1[finalIndex].b = '\0';
+                        }
+                    }
+                }
+           }
+       }
 
     pic[2].img = img3;
-
 
 }
 
 double calcDistance(RGB* pixel1, RGB* pixel2){
-   return sqrt(pow(pixel1.r - pixel2.r, 2) + pow(pixel1.g - pixel2.g, 2) + pow(pixel1.b - pixel2.b, 2));
+    double rDistance = (double) pixel1->r - pixel2->r;
+    double gDistance = (double) pixel1->g - pixel2->g;
+    double bDistance = (double) pixel1->b - pixel2->b;
+
+   return sqrt(pow(rDistance, 2) + pow(gDistance, 2) + pow(bDistance, 2));
 }
+

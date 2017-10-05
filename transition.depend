@@ -292,10 +292,11 @@
 
 1504289654 c:\users\rodrigo\desktop\transition\lib\soil\stbi_dds_aug_c.h
 
-1506044700 source:c:\users\rodrigo\desktop\transition\main.c
+1506652876 source:c:\users\rodrigo\desktop\transition\main.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
+	<math.h>
 	<windows.h>
 	<OpenGL/gl.h>
 	<OpenGL/glu.h>
